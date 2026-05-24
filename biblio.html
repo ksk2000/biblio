@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Симулятор Библиотекаря</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== MAIN MENU ===== */
+  #mainMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    text-align: center;
+    padding: 20px;
+  }
+
+  #mainMenu h1 {
+    font-family: 'Merriweather', serif;
+    font-size: 2.8em;
+    color: #e2b04a;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  }
+
+  #mainMenu .subtitle {
+    font-size: 1.2em;
+    color: #a0a0c0;
+    margin-bottom: 40px;
+  }
+
+  .menu-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(226,176,74,0.3);
+    border-radius: 16px;
+    padding: 30px 40px;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  .menu-card:hover {
+    background: rgba(226,176,74,0.15);
+    border-color: #e2b04a;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(226,176,74,0.2);
+  }
+
+  .menu-card h3 {
+    font-family: 'Merriweather', serif;
+    color: #e2b04a;
+    font-size: 1.3em;
+    margin-bottom: 8px;
+  }
+
+  .menu-card p {
+    color: #a0a0c0;
+    font-size: 0.95em;
+    line-height: 1.5;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #gameScreen {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  }
+
+  .game-header {
+    background: rgba(0,0,0,0.3);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(226,176,74,0.3);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .game-header h2 {
+    font-family: 'Merriweather', serif;
+    color: #e2b04a;
+    font-size: 1.4em;
+  }
+
+  .stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1em;
+  }
+
+  .stat-icon { font-size: 1.3em; }
+  .stat-value { font-weight: 600; color: #e2b04a; font-size: 1.1em; }
+
+  .btn {
+    background: linear-gradient(135deg, #e2b04a, #c4953a);
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(226,176,74,0.4);
+  }
+
+  .btn-back {
+    background: rgba(255,255,255,0.1);
+    color: #e0e0e0;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .btn-back:hover {
+    background: rgba(255,255,255,0.2);
+    box-shadow: none;
+  }
+
+  .game-body {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  /* ===== SORTING ===== */
+  .sort-instruction {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    color: #a0a0c0;
+  }
+
+  .current-book-display {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .book-card {
+    display: inline-block;
+    background: linear-gradient(135deg, #2a2a4a, #1e1e3a);
+    border: 2px solid rgba(226,176,74,0.4);
+    border-radius: 12px;
+    padding: 25px 40px;
+    min-width: 320px;
+    max-width: 500px;
+    animation: bookAppear 0.4s ease;
+  }
+
+  @keyframes bookAppear {
+    from { transform: scale(0.8) rotateY(90deg); opacity: 0; }
+    to { transform: scale(1) rotateY(0deg); opacity: 1; }
+  }
+
+  .book-card .book-emoji { font-size: 2.5em; margin-bottom: 10px; }
+
+  .book-card .book-title {
+    font-family: 'Merriweather', serif;
+    font-size: 1.2em;
+    color: #f0f0f0;
+    margin-bottom: 8px;
+  }
+
+  .book-card .book-author {
+    color: #a0a0c0;
+    font-size: 0.95em;
+    margin-bottom: 8px;
+  }
+
+  .book-card .book-desc {
+    color: #8888aa;
+    font-size: 0.85em;
+    font-style: italic;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .category-btn {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 18px 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+  }
+
+  .category-btn:hover {
+    border-color: #e2b04a;
+    background: rgba(226,176,74,0.1);
+    transform: translateY(-3px);
+  }
+
+  .category-btn .cat-icon { font-size: 2em; margin-bottom: 8px; }
+  .category-btn .cat-name { font-weight: 600; color: #e0e0e0; font-size: 1em; }
+  .category-btn .cat-code { font-size: 0.8em; color: #8888aa; margin-top: 4px; }
+
+  /* ===== READER SERVICE ===== */
+  .reader-area { text-align: center; margin-bottom: 30px; }
+
+  .reader-bubble {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(226,176,74,0.3);
+    border-radius: 16px;
+    padding: 25px;
+    display: inline-block;
+    max-width: 500px;
+    animation: fadeInUp 0.5s ease;
+  }
+
+  @keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .reader-bubble .reader-emoji { font-size: 3em; margin-bottom: 10px; }
+  .reader-bubble .reader-text { font-size: 1.05em; color: #d0d0e0; line-height: 1.6; }
+  .reader-bubble .reader-hint { color: #8888aa; font-size: 0.85em; margin-top: 10px; font-style: italic; }
+
+  .books-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .shelf-book {
+    background: linear-gradient(135deg, #2a2a4a, #1e1e3a);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+  }
+
+  .shelf-book:hover {
+    border-color: #e2b04a;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .shelf-book .sbook-emoji { font-size: 1.8em; }
+  .shelf-book .sbook-title { font-size: 0.9em; color: #d0d0e0; margin-top: 6px; }
+  .shelf-book .sbook-author { font-size: 0.75em; color: #8888aa; margin-top: 3px; }
+
+  /* ===== FEEDBACK ===== */
+  .feedback-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .feedback-overlay.show { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .feedback-box {
+    background: linear-gradient(135deg, #2a2a4a, #1e1e3a);
+    border-radius: 16px;
+    padding: 40px 50px;
+    text-align: center;
+    max-width: 450px;
+    animation: popIn 0.4s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .feedback-box .fb-icon { font-size: 4em; margin-bottom: 15px; }
+  .feedback-box .fb-text { font-size: 1.2em; margin-bottom: 8px; color: #f0f0f0; }
+  .feedback-box .fb-detail { color: #a0a0c0; font-size: 0.95em; margin-bottom: 20px; line-height: 1.5; }
+
+  /* ===== RESULTS ===== */
+  .results-screen { text-align: center; padding: 40px 20px; }
+  .results-screen h2 { font-family: 'Merriweather', serif; color: #e2b04a; font-size: 2em; margin-bottom: 10px; }
+  .results-screen .final-score { font-size: 3em; color: #e2b04a; font-weight: 700; margin: 20px 0; }
+  .results-screen .rank { font-size: 1.3em; color: #a0a0c0; margin-bottom: 30px; }
+  .results-screen .rank-title { color: #e2b04a; font-weight: 700; }
+
+  .progress-bar-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    height: 14px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #e2b04a, #f0c860);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+
+  .round-info { text-align: center; color: #8888aa; margin-bottom: 20px; font-size: 0.9em; }
+
+  .combo-display {
+    text-align: center;
+    font-size: 1.1em;
+    color: #4ecdc4;
+    margin-bottom: 10px;
+    min-height: 1.5em;
+  }
+
+  .correct-flash { border-color: #4ecdc4 !important; background: rgba(78,205,196,0.15) !important; }
+  .wrong-flash { border-color: #e74c3c !important; background: rgba(231,76,60,0.15) !important; }
+
+  .library-deco {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(0deg, rgba(26,26,46,0.9), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (max-width: 600px) {
+    #mainMenu h1 { font-size: 1.8em; }
+    .book-card { min-width: 260px; padding: 20px; }
+    .categories-grid { grid-template-columns: 1fr 1fr; }
+    .books-shelf { grid-template-columns: 1fr 1fr; }
+    .game-header { padding: 10px 15px; }
+    .feedback-box { padding: 30px; margin: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== MAIN MENU ===== -->
+<div id="mainMenu">
+  <h1>📚 Симулятор Библиотекаря</h1>
+  <p class="subtitle">Проверь свои знания библиотечного дела!</p>
+
+  <div class="menu-card" onclick="startGame('sorting')">
+    <h3>📖 Расставь книги по полкам</h3>
+    <p>Определи жанр/тематику книги и расставь её на правильную полку по ББК. 10 книг —考验 твоя эрудиция!</p>
+  </div>
+
+  <div class="menu-card" onclick="startGame('reader')">
+    <h3>🧑‍💼 Обслужи читателя</h3>
+    <p>Читатель описывает, что ему нужно. Найди подходящую книгу среди представленных на полке.</p>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="gameScreen">
+  <div class="game-header">
+    <h2 id="gameTitle">Игра</h2>
+    <div class="stats">
+      <div class="stat"><span class="stat-icon">⭐</span><span class="stat-value" id="scoreDisplay">0</span></div>
+      <div class="stat"><span class="stat-icon">✅</span><span class="stat-value" id="correctDisplay">0</span><span>/</span><span id="totalDisplay">0</span></div>
+      <div class="stat"><span class="stat-icon">🔥</span><span class="stat-value" id="comboDisplay">0</span></div>
+      <button class="btn btn-back" onclick="goToMenu()">← Меню</button>
+    </div>
+  </div>
+  <div class="game-body" id="gameBody"></div>
+</div>
+
+<!-- ===== FEEDBACK OVERLAY ===== -->
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-box" id="feedbackBox">
+    <div class="fb-icon" id="fbIcon">✅</div>
+    <div class="fb-text" id="fbText">Правильно!</div>
+    <div class="fb-detail" id="fbDetail"></div>
+    <button class="btn" id="fbBtn" onclick="closeFeedback()">Далее</button>
+  </div>
+</div>
+
+<div class="library-deco"></div>
+
+<script>
+const CATEGORIES = [
+  { id: 'fiction',    name: 'Художественная литература', icon: '📖', code: 'ББК 84' },
+  { id: 'science',    name: 'Естественные науки',        icon: '🔬', code: 'ББК 20-28' },
+  { id: 'history',    name: 'История',                   icon: '🏛️', code: 'ББК 63' },
+  { id: 'tech',       name: 'Техника',                   icon: '⚙️', code: 'ББК 30-39' },
+  { id: 'philosophy', name: 'Философия. Психология',     icon: '💭', code: 'ББК 87' },
+  { id: 'art',        name: 'Искусство',                 icon: '🎨', code: 'ББК 85' },
+  { id: 'medicine',   name: 'Медицина',                  icon: '🏥', code: 'ББК 5' },
+  { id: 'education',  name: 'Педагогика',                icon: '🎓', code: 'ББК 74' },
+];
+
+const BOOKS = [
+  { title:'Война и мир',         author:'Л.Н. Толстой',    desc:'Эпопея о русском обществе в эпоху наполеоновских войн',  category:'fiction',    emoji:'📕' },
+  { title:'Общая биология',      author:'В.Б. Захаров',    desc:'Учебник по основам биологии для старших классов',        category:'science',    emoji:'🧬' },
+  { title:'История России',      author:'Б.А. Рыбаков',    desc:'От древнейших времён до конца XVII века',               category:'history',    emoji:'📜' },
+  { title:'Основы программирования', author:'А.В. Ахо',    desc:'Алгоритмы: построение и анализ',                         category:'tech',       emoji:'💻' },
+  { title:'Философия',           author:'В.С. Стёпин',     desc:'Учебник для вузов по истории философии',                 category:'philosophy', emoji:'🤔' },
+  { title:'История искусств',    author:'Б.Р. Виппер',     desc:'От античности до наших дней',                            category:'art',        emoji:'🖼️' },
+  { title:'Анатомия человека',   author:'Р.П. Самусев',    desc:'Учебное пособие по анатомии и физиологии',               category:'medicine',   emoji:'🫀' },
+  { title:'Педагогика',          author:'И.П. Подласый',   desc:'Учебник для студентов педагогических вузов',             category:'education',  emoji:'📋' },
+  { title:'Мастер и Маргарита',  author:'М.А. Булгаков',   desc:'Роман о визите дьявола в Москву',                        category:'fiction',    emoji:'📗' },
+  { title:'Астрономия',          author:'В.В. Порфирьев',  desc:'Основы астрономии и космологии',                         category:'science',    emoji:'🔭' },
+  { title:'Всемирная история',   author:'Е.В. Тарле',      desc:'Наполеон и его эпоха',                                   category:'history',    emoji:'⚔️' },
+  { title:'Сопротивление материалов', author:'А.В. Дарков',desc:'Учебник для технических вузов',                          category:'tech',       emoji:'🔧' },
+  { title:'Психология мышления', author:'С.Л. Рубинштейн', desc:'Исследование процессов мышления',                        category:'philosophy', emoji:'🧠' },
+  { title:'Музыкальная литература',author:'И.В. Способин', desc:'Очерки по истории музыкального искусства',               category:'art',        emoji:'🎵' },
+  { title:'Фармакология',        author:'Д.А. Харкевич',   desc:'Учебник по лекарственным средствам',                     category:'medicine',   emoji:'💊' },
+  { title:'Методика обучения',   author:'Ю.К. Бабанский',  desc:'Оптимизация учебно-воспитательного процесса',            category:'education',  emoji:'📐' },
+  { title:'Евгений Онегин',      author:'А.С. Пушкин',     desc:'Роман в стихах о жизни русского дворянства',             category:'fiction',    emoji:'📙' },
+  { title:'Химия',               author:'Н.Л. Глинка',     desc:'Общая химия: учебное пособие',                           category:'science',    emoji:'⚗️' },
+  { title:'Древний Рим',         author:'Т. Моммзен',      desc:'История Римского государства',                           category:'history',    emoji:'🏛️' },
+  { title:'Теория механизмов',   author:'И.И. Артоболевский',desc:'Теория машин и механизмов',                            category:'tech',       emoji:'⚙️' },
+  { title:'Этика',               author:'А.А. Гусейнов',   desc:'Учебник по этическим проблемам',                         category:'philosophy', emoji:'⚖️' },
+  { title:'Архитектура',         author:'В.Г. Власов',     desc:'Стили в искусстве и архитектуре',                        category:'art',        emoji:'🏗️' },
+  { title:'Терапия',             author:'В.С. Моисеев',    desc:'Клинические лекции по внутренним болезням',              category:'medicine',   emoji:'🩺' },
+  { title:'Возрастная психология',author:'Д.Б. Эльконин',  desc:'Психология развития ребёнка',                            category:'education',  emoji:'👶' },
+  { title:'Анна Каренина',       author:'Л.Н. Толстой',    desc:'Роман о семейной драме в русском обществе',              category:'fiction',    emoji:'📕' },
+  { title:'Физика',              author:'И.В. Савельев',   desc:'Курс общей физики в 3 томах',                            category:'science',    emoji:'⚛️' },
+  { title:'Средневековье',       author:'Ж. Ле Гофф',      desc:'Цивилизация средневекового Запада',                      category:'history',    emoji:'🏰' },
+  { title:'Электротехника',      author:'В.С. Пантюшин',   desc:'Основы электротехники и электроники',                    category:'tech',       emoji:'🔌' },
+  { title:'Логика',              author:'Б.И. Каверин',    desc:'Учебник по формальной логике',                           category:'philosophy', emoji:'📝' },
+  { title:'Киноискусство',       author:'Р.Н. Юренев',     desc:'Краткая история кино',                                   category:'art',        emoji:'🎬' },
+];
+
+const READER_SCENARIOS = [
+  { reader:'👩‍🎓', text:'Здравствуйте! Мне нужна книга для реферата по физике. Что-нибудь про основы механики.',           hint:'Ищите книгу по естественным наукам',           correct:0 },
+  { reader:'👨‍🦳', text:'Добрый день! Хочу почитать что-нибудь интересное о древних цивилизациях, особенно о Риме.',      hint:'Подсказка: история',                          correct:1 },
+  { reader:'👩‍💼', text:'Привет! Мне посоветовали почитать классику русской литературы. Что-нибудь знаменитое.',          hint:'Художественная литература',                  correct:2 },
+  { reader:'👨‍⚕️', text:'Здравствуйте! Я студент-медик, ищу учебник по внутренним болезням.',                             hint:'Медицина',                                   correct:3 },
+  { reader:'👩‍🏫', text:'Добрый день! Я учитель, ищу книгу о методах обучения детей.',                                    hint:'Педагогика',                                 correct:4 },
+  { reader:'👨‍🎨', text:'Привет! Интересуюсь историей музыки. Есть что-нибудь?',                                           hint:'Искусство',                                  correct:5 },
+  { reader:'👩‍💻', text:'Здравствуйте! Хочу изучить программирование. Нужен учебник по алгоритмам.',                      hint:'Технические науки',                          correct:6 },
+  { reader:'👨‍🎓', text:'Добрый день! Пишу работу по этике. Нужна книга по этическим проблемам.',                         hint:'Философия',                                  correct:7 },
+  { reader:'👵',   text:'Здравствуйте, голубчик! Хочу почитать роман про любовь, что-нибудь классическое.',               hint:'Художественная литература',                  correct:8 },
+  { reader:'🧑‍🔬', text:'Привет! Мне нужна литература по химии для лабораторных работ.',                                  hint:'Естественные науки',                         correct:9 },
+];
+
+const READER_BOOKS = [
+  { title:'Курс общей физики',          author:'И.В. Савельев',        emoji:'⚛️' },
+  { title:'История Римского государства',author:'Т. Моммзен',          emoji:'🏛️' },
+  { title:'Война и мир',                author:'Л.Н. Толстой',         emoji:'📕' },
+  { title:'Клинические лекции',         author:'В.С. Моисеев',         emoji:'🩺' },
+  { title:'Оптимизация обучения',       author:'Ю.К. Бабанский',       emoji:'📋' },
+  { title:'Краткая история кино',       author:'Р.Н. Юренев',          emoji:'🎬' },
+  { title:'Алгоритмы',                  author:'А.В. Ахо',             emoji:'💻' },
+  { title:'Учебник по этике',           author:'А.А. Гусейнов',        emoji:'⚖️' },
+  { title:'Анна Каренина',              author:'Л.Н. Толстой',         emoji:'📕' },
+  { title:'Общая химия',                author:'Н.Л. Глинка',          emoji:'⚗️' },
+  { title:'Мастер и Маргарита',         author:'М.А. Булгаков',        emoji:'📗' },
+  { title:'Анатомия человека',          author:'Р.П. Самусев',         emoji:'🫀' },
+  { title:'Сопротивление материалов',   author:'А.В. Дарков',          emoji:'🔧' },
+  { title:'Логика',                     author:'Б.И. Каверин',         emoji:'📝' },
+  { title:'Древний Рим',                author:'Е.В. Тарле',           emoji:'📜' },
+];
+
+// ===== GAME STATE =====
+let G = { mode:null, score:0, correct:0, total:0, combo:0, maxCombo:0, round:0, maxRounds:10, currentBooks:[] };
+
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function updateStats(){
+  document.getElementById('scoreDisplay').textContent = G.score;
+  document.getElementById('correctDisplay').textContent = G.correct;
+  document.getElementById('totalDisplay').textContent = G.total;
+  document.getElementById('comboDisplay').textContent = G.combo;
+}
+
+function showFeedback(icon,text,detail,callback){
+  document.getElementById('fbIcon').textContent = icon;
+  document.getElementById('fbText').textContent = text;
+  document.getElementById('fbDetail').textContent = detail;
+  document.getElementById('feedbackOverlay').classList.add('show');
+  document.getElementById('fbBtn').onclick = ()=>{
+    document.getElementById('feedbackOverlay').classList.remove('show');
+    if(callback) callback();
+  };
+}
+function closeFeedback(){ document.getElementById('feedbackOverlay').classList.remove('show'); }
+
+function goToMenu(){
+  document.getElementById('mainMenu').style.display = 'flex';
+  document.getElementById('gameScreen').style.display = 'none';
+}
+
+function startGame(mode){
+  G = { mode, score:0, correct:0, total:0, combo:0, maxCombo:0, round:0, maxRounds:10, currentBooks:[] };
+  document.getElementById('mainMenu').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+
+  if(mode==='sorting'){
+    document.getElementById('gameTitle').textContent = '📖 Расставь книги по полкам';
+    G.currentBooks = shuffle(BOOKS).slice(0,10);
+    nextSortBook();
+  } else {
+    document.getElementById('gameTitle').textContent = '🧑‍💼 Обслужи читателя';
+    nextReaderScenario();
+  }
+  updateStats();
+}
+
+/* ===== SORTING ===== */
+function nextSortBook(){
+  if(G.round >= G.maxRounds){ showResults(); return; }
+  const book = G.currentBooks[G.round];
+  G.total++;
+  document.getElementById('gameBody').innerHTML = `
+    <div class="round-info">Книга ${G.round+1} из ${G.maxRounds}</div>
+    <div class="combo-display">${G.combo>=3?'🔥 Комбо x'+G.combo+'!':''}</div>
+    <div class="sort-instruction">Определите жанр/тематику книги и выберите правильную полку:</div>
+    <div class="current-book-display">
+      <div class="book-card">
+        <div class="book-emoji">${book.emoji}</div>
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">${book.author}</div>
+        <div class="book-desc">${book.desc}</div>
+      </div>
+    </div>
+    <div class="categories-grid">
+      ${CATEGORIES.map(c=>`
+        <div class="category-btn" id="cat-${c.id}" onclick="selectCategory('${c.id}')">
+          <div class="cat-icon">${c.icon}</div>
+          <div class="cat-name">${c.name}</div>
+          <div class="cat-code">${c.code}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function selectCategory(catId){
+  const book = G.currentBooks[G.round];
+  const ok = catId===book.category;
+  const btn = document.getElementById('cat-'+catId);
+  if(ok){
+    G.correct++; G.combo++;
+    if(G.combo>G.maxCombo) G.maxCombo=G.combo;
+    G.score += 10 * Math.min(G.combo,5);
+    btn.classList.add('correct-flash');
+    updateStats();
+    setTimeout(()=>{ G.round++; nextSortBook(); },600);
+  } else {
+    G.combo=0; btn.classList.add('wrong-flash'); updateStats();
+    const cc = CATEGORIES.find(c=>c.id===book.category);
+    setTimeout(()=> showFeedback('❌','Неправильно!',`«${book.title}» → ${cc.icon} ${cc.name} (${cc.code})`,()=>{G.round++;nextSortBook();}),400);
+  }
+}
+
+/* ===== READER SERVICE ===== */
+function nextReaderScenario(){
+  if(G.round >= G.maxRounds){ showResults(); return; }
+  const sc = READER_SCENARIOS[G.round];
+  G.total++;
+  const correctBook = READER_BOOKS[sc.correct];
+  let wrong = READER_BOOKS.filter((_,i)=>i!==sc.correct);
+  wrong = shuffle(wrong).slice(0,7);
+  let shelf = shuffle([correctBook,...wrong]);
+
+  document.getElementById('gameBody').innerHTML = `
+    <div class="round-info">Посетитель ${G.round+1} из ${G.maxRounds}</div>
+    <div class="combo-display">${G.combo>=3?'🔥 Комбо x'+G.combo+'!':''}</div>
+    <div class="reader-area">
+      <div class="reader-bubble">
+        <div class="reader-emoji">${sc.reader}</div>
+        <div class="reader-text">${sc.text}</div>
+        <div class="reader-hint">💡 ${sc.hint}</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:15px;color:#a0a0c0;">Выберите подходящую книгу для читателя:</div>
+    <div class="books-shelf">
+      ${shelf.map((b,i)=>`
+        <div class="shelf-book" onclick="selectBook(${i},${b===correctBook})">
+          <div class="sbook-emoji">${b.emoji}</div>
+          <div class="sbook-title">${b.title}</div>
+          <div class="sbook-author">${b.author}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function selectBook(idx,ok){
+  const el = document.getElementById('shelf-'+idx);
+  if(ok){
+    G.correct++; G.combo++;
+    if(G.combo>G.maxCombo) G.maxCombo=G.combo;
+    G.score += 15 * Math.min(G.combo,5);
+    el.classList.add('correct-flash');
+    updateStats();
+    setTimeout(()=>{ G.round++; nextReaderScenario(); },600);
+  } else {
+    G.combo=0; el.classList.add('wrong-flash'); updateStats();
+    const cb = READER_BOOKS[READER_SCENARIOS[G.round].correct];
+    setTimeout(()=> showFeedback('📚','Не та книга!',`Читателю подошла бы: «${cb.title}» — ${cb.author}`,()=>{G.round++;nextReaderScenario();}),400);
+  }
+}
+
+/* ===== RESULTS ===== */
+function showResults(){
+  const pct = Math.round((G.correct/G.total)*100);
+  let rank, icon;
+  if(pct>=95){rank='Мастер библиотечного дела';icon='👑';}
+  else if(pct>=80){rank='Старший библиотекарь';icon='🌟';}
+  else if(pct>=60){rank='Библиотекарь';icon='📚';}
+  else if(pct>=40){rank='Помощник библиотекаря';icon='📋';}
+  else{rank='Начинающий читатель';icon='🌱';}
+
+  const names = {sorting:'📖 Расстановка книг', reader:'🧑‍💼 Обслуживание читателей'};
+
+  document.getElementById('gameBody').innerHTML = `
+    <div class="results-screen">
+      <h2>${names[G.mode]} завершена!</h2>
+      <div class="final-score">${G.score} очков</div>
+      <div class="rank">${icon} <span class="rank-title">${rank}</span></div>
+      <div style="margin:20px auto;max-width:400px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <span>Правильных ответов</span><span>${G.correct}/${G.total} (${pct}%)</span>
+        </div>
+        <div class="progress-bar-container"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div style="color:#a0a0c0;margin-top:10px;">Максимальное комбо: 🔥 x${G.maxCombo}</div>
+      <div style="margin-top:30px;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn" onclick="startGame('${G.mode}')">🔄 Ещё раз</button>
+        <button class="btn btn-back" onclick="goToMenu()">← В меню</button>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
